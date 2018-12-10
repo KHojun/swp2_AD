@@ -92,6 +92,6 @@ class Sutda:
 
 if __name__ == "__main__":
     a = card.getCard()
-    s = Sutda(a["cpu"], a["player"])
+    s = Sutda()
     print(s.checkDeck(a["cpu"]), s.checkDeck(a['player']))
-    print(s.checkWin([s.checkDeck(a["cpu"]), s.checkDeck(a['player'])]))
+    print(s.checkWin(["땡잡이", "7땡"]))
