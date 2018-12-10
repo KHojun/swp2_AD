@@ -19,12 +19,12 @@ class SutdaGame(QWidget):
         left_Layout = QGridLayout()
         left_Layout.addWidget(self.getCardButton, 1, 0)
         self.computer_pae = QLabel(self)
-        pixma = QPixmap('2.png')
+        pixma = QPixmap('IMG/2.png')
         self.computer_pae.setPixmap(pixma)
         left_Layout.addWidget(self.computer_pae, 0, 0)
 
         self.user_pae = QLabel(self)
-        pixmap = QPixmap('1.png')
+        pixmap = QPixmap('IMG/1.png')
         self.user_pae.setPixmap(pixmap)
         left_Layout.addWidget(self.user_pae, 2, 0)
 
