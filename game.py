@@ -24,14 +24,15 @@ class SutdaGame(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.user_info = []
-
+        self.sutda = Sutda()
 
         self.log = ""
-
+        self.information = {}
         self.get_paeButton = QToolButton()
         self.get_paeButton.setText("패 받기")
         self.get_paeButton.clicked.connect(self.Get_card)
         self.get_paeButton.setFixedSize(105,50)
+        self.get_paeButton.setEnabled(False)
 
         left_Layout = QGridLayout()
         left_Layout.addWidget(self.get_paeButton, 2, 0)
@@ -93,10 +94,11 @@ class SutdaGame(QWidget):
         self.left_money.setReadOnly(True)
         self.left_money.setAlignment(Qt.AlignRight)
         self.lefted_money = 1000000
-        self.left_money.setText(str(self.lefted_money) + '원')
+        self.left_money.setText(str(self.lefted_money) + "원")
         self.left_money.setFixedWidth(105)
 
         self.name_edit = QLineEdit()
+
         self.name_edit.setAlignment(Qt.AlignRight)
 
 
@@ -134,10 +136,14 @@ class SutdaGame(QWidget):
         self.btn_Ranking.setText("Rank")
         self.btn_Ranking.clicked.connect(self.ranking)
 
+
+
         self.logBox = QTextEdit()
         self.logBox.setReadOnly(True)
         self.lblog = QLabel("--log--")
         self.lblog.setAlignment(Qt.AlignCenter)
+
+
         right_layout = QGridLayout()
 
         right_layout.addWidget(self.name_edit, 0, 0)
@@ -146,17 +152,30 @@ class SutdaGame(QWidget):
         right_layout.addWidget(self.btn_Ranking, 0, 3)
         right_layout.addWidget(self.lblog,1,0,1,4)
         right_layout.addWidget(self.logBox, 2, 0, 3, 4)
+
+        self.rank_Edit = QTextEdit()
+        self.rank_Edit.setReadOnly(True)
+        self.rank_Rabel = QLabel("--Rank--")
+        self.rank_Rabel.setAlignment(Qt.AlignCenter)
+        self.rank_Edit.setText(self.ranking())
+
+
+        rank_layout = QGridLayout()
+        rank_layout.addWidget(self.rank_Edit,1,0)
+        rank_layout.addWidget(self.rank_Rabel, 0, 0)
+        self.ranking()
         # Layout placement
         mainLayout = QGridLayout()
         self.setWindowTitle("Sutda")
         # mainLayout.setSizeConstraint(QLayout.SetFixedSize)
         mainLayout.addLayout(left_Layout, 0, 0)
         mainLayout.addLayout(right_layout, 0, 1)
+        mainLayout.addLayout(rank_layout, 0, 2)
         self.setLayout(mainLayout)
         self.btn_Die.clicked.connect(self.dieClicked)
         self.btn_Betting.clicked.connect(self.bettingClicked)
 
-        self.start_game()
+
 
     def Get_card(self):
 
@@ -230,30 +249,72 @@ class SutdaGame(QWidget):
 
 
     def start_game(self):
-        self.name_edit.setReadOnly(True)
-        self.sutda = Sutda()
+        if self.name_edit.text() == "":
+            pass
+        else:
+            self.name_edit.setReadOnly(True)
+            self.get_paeButton.setEnabled(True)
+            f = open('user_info.txt', 'r')
+            lines = f.readlines()
+            f.close()
+            information = {}
+            self.count = 0
+
+            for line in lines:
+                try:
+                    line1 = line.split(" ")
+                    information[line1[0]] = line1[1]
+                except:
+                    continue
+
+            info_list = [*information] #key list
+            if self.name_edit.text() in info_list:
+                length = len(information[self.name_edit.text()].rstrip())
+                self.left_money.setText(information[self.name_edit.text()].rstrip())
+                tmp = information[self.name_edit.text()][0:length-1]
+                self.lefted_money = int(tmp)
+
+
+            #if self.name_edit.text() in info_list:
+            #    self.left_money.setText(info_dic[self.name_edit.text()])
+
+
 
     def save(self):
+        #try:
         f = open('user_info.txt', 'r')
         lines = f.readlines()
         f.close()
+        self.information = {}
         self.count = 0
-        for line in lines:
-            information = line.rstrip()
-            self.user_info.append(information)
-        self.user_info.append(self.left_money.text() + " " + self.name_edit.text())
-        f = open('user_info.txt', 'w')
 
-        for info in self.user_info:
-            f.write(info + "\n")
+
+        for line in lines:
+            try:
+                line1 = line.split(" ")
+                self.information[line1[0]] = line1[1]
+            except:
+                continue
+        self.information[self.name_edit.text()] = self.left_money.text()
+
+        f = open('user_info.txt', 'w')
+        info_list = [*self.information]
+
+        for key, val in self.information.items():
+            try:
+                f.write(key + " "+val + "\n")
+            except:
+                continue
+        f.close()
+        return self.information
 
     def ranking(self):
-        rank = Ranking(self)
-        rank.show()
-
-        # 타임아웃 이벤트가 발생하면 호출되는 메서드
-        # 어떤 타이머에 의해서 호출되었는지 확인
-
+        for key, val in self.information.items():
+            try:
+                self.rank_Edit.setText(key + " " + val)
+            except:
+                continue
+        pass
 
 if __name__ == '__main__':
     import sys
