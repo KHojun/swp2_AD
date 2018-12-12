@@ -12,14 +12,6 @@ import time
 import datetime
 from data import cards
 
-class Ranking(QWidget):
-    def __init__(self, parent=None):
-        super(Ranking, self).__init__(parent)
-        self.aa = QLabel()
-        lay = QGridLayout()
-        self.setLayout(lay)
-
-
 class SutdaGame(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -94,7 +86,7 @@ class SutdaGame(QWidget):
         self.left_money.setReadOnly(True)
         self.left_money.setAlignment(Qt.AlignRight)
         self.lefted_money = 1000000
-        self.left_money.setText(str(self.lefted_money) + "원")
+        self.left_money.setText(str(self.lefted_money))
         self.left_money.setFixedWidth(105)
 
         self.name_edit = QLineEdit()
@@ -174,6 +166,7 @@ class SutdaGame(QWidget):
         self.setLayout(mainLayout)
         self.btn_Die.clicked.connect(self.dieClicked)
         self.btn_Betting.clicked.connect(self.bettingClicked)
+        self.ranking()
 
 
 
@@ -210,7 +203,7 @@ class SutdaGame(QWidget):
         if self.lefted_money < 100000:
             self.lefted_money += 300000
             self.log = nowtime + "보유 금액이 10만원 미만이 되어 지원금\n              30만원을 지급합니다! " + "\n              얻은 금액: 300000원" + "\n" + self.log
-        self.left_money.setText(str(self.lefted_money) + '원')
+        self.left_money.setText(str(self.lefted_money))
         self.logBox.setText(self.log)
         self.btn_Die.setEnabled(False)
         self.btn_Betting.setEnabled(False)
@@ -240,7 +233,7 @@ class SutdaGame(QWidget):
         if self.lefted_money < 100000:
             self.lefted_money += 300000
             self.log = nowtime + "보유 금액이 10만원 미만이 되어 지원금\n              30만원을 지급합니다! " + "\n              얻은 금액: 300000원" + "\n" + self.log
-        self.left_money.setText(str(self.lefted_money) + "원")
+        self.left_money.setText(str(self.lefted_money))
         self.btn_Die.setEnabled(False)
         self.btn_Betting.setEnabled(False)
         self.get_paeButton.setEnabled(True)
@@ -254,7 +247,7 @@ class SutdaGame(QWidget):
         else:
             self.name_edit.setReadOnly(True)
             self.get_paeButton.setEnabled(True)
-            f = open('user_info.txt', 'r')
+            f = open('user_info.txt', 'r',encoding='UTF8')
             lines = f.readlines()
             f.close()
             information = {}
@@ -273,6 +266,9 @@ class SutdaGame(QWidget):
                 self.left_money.setText(information[self.name_edit.text()].rstrip())
                 tmp = information[self.name_edit.text()][0:length-1]
                 self.lefted_money = int(tmp)
+            else:
+                self.lefted_money = 1000000
+                self.left_money.setText("1000000")
 
 
             #if self.name_edit.text() in info_list:
@@ -282,39 +278,62 @@ class SutdaGame(QWidget):
 
     def save(self):
         #try:
-        f = open('user_info.txt', 'r')
+
+        f = open('user_info.txt', 'r', encoding='UTF8')
         lines = f.readlines()
         f.close()
         self.information = {}
         self.count = 0
 
+        if len(self.name_edit.text()) != 0:
+            for line in lines:
+                try:
+                    line1 = line.split(" ")
+                    self.information[line1[0]] = line1[1]
+                except:
+                    continue
+            self.information[self.name_edit.text()] = str(self.lefted_money)
+
+            f = open('user_info.txt', 'w',encoding='UTF8')
+            info_list = [*self.information]
+
+            for key, val in self.information.items():
+                try:
+                    f.write(key + " "+val + "\n")
+                except:
+                    continue
+        else:
+            pass
+        f.close()
+        self.name_edit.setReadOnly(False)
+        self.name_edit.setText("")
+        self.get_paeButton.setEnabled(False)
+
+        return self.information
+
+    def ranking(self):
+        f = open('user_info.txt', 'r', encoding='UTF8')
+        lines = f.readlines()
+        f.close()
+        information = {}
 
         for line in lines:
             try:
                 line1 = line.split(" ")
-                self.information[line1[0]] = line1[1]
+                information[line1[0]] = int(line1[1])
             except:
                 continue
-        self.information[self.name_edit.text()] = self.left_money.text()
 
-        f = open('user_info.txt', 'w')
-        info_list = [*self.information]
 
-        for key, val in self.information.items():
-            try:
-                f.write(key + " "+val + "\n")
-            except:
-                continue
-        f.close()
-        return self.information
+        sort_dic = [(k, information[k]) for k in sorted(information, key=information.get, reverse=True)]
 
-    def ranking(self):
-        for key, val in self.information.items():
-            try:
-                self.rank_Edit.setText(key + " " + val)
-            except:
-                continue
-        pass
+        rank_str = ""
+        cnt = 1
+        for key, val in sort_dic:
+            rank_str += str(cnt) + "등  " + key + "  보유금액 :"+str(val)+"\n"
+            cnt+=1
+        self.rank_Edit.setText(rank_str)
+
 
 if __name__ == '__main__':
     import sys
